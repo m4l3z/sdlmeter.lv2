@@ -21,16 +21,11 @@ typedef struct {
 
     LV2UI_Write_Function write;
     LV2UI_Controller controller;
-    LV2UI_Widget* twidget;
+    LV2UI_Widget* widget;
     SDL_Surface *sdlscreen;
     SDL_Surface *meter;
     SDL_Window* window;
-    xcb_connection_t *conn;
-    xcb_screen_t *screen;
-    xcb_drawable_t win;
-    xcb_drawable_t widget;
     void* parentXwindow;
-    int done;
 }sdlmeterUI;
 
 static LV2UI_Handle instantiate(const LV2UI_Descriptor*  descriptor, const char*  plugin_uri,
@@ -39,9 +34,9 @@ static LV2UI_Handle instantiate(const LV2UI_Descriptor*  descriptor, const char*
             sdlmeterUI* ui = (sdlmeterUI*)malloc(sizeof(sdlmeterUI));
             ui->write = write_function;
             ui->controller = controller;
-            ui->screen = NULL;
+            ui->sdlscreen = NULL;
             ui->meter = NULL;
-            ui->twidget = widget;
+            ui->widget = widget;
             LV2UI_Resize *host_resize = NULL;
             ui->parentXwindow = 0;
 
@@ -66,31 +61,14 @@ static LV2UI_Handle instantiate(const LV2UI_Descriptor*  descriptor, const char*
                 free(ui);
                 return NULL;
             }
-           /* 
-  ui->conn = xcb_connect(NULL, NULL);
-    ui->screen = xcb_setup_roots_iterator(xcb_get_setup(ui->conn)).data;
-        ui->win = (uintptr_t)parentXwindow;
-        ui->widget = xcb_generate_id(ui->conn);
 
-
-
-const uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-  const uint32_t values [2] = {
-            ui->screen->black_pixel,
-                    XCB_EVENT_MASK_EXPOSURE
-  };
-
-
-        xcb_create_window(ui->conn, XCB_COPY_FROM_PARENT, ui->widget, ui->win,
-                        0, 0, 1280, 100, 0,
-                                XCB_WINDOW_CLASS_INPUT_OUTPUT, ui->screen->root_visual, mask, values);
-          xcb_map_window(ui->conn, ui->widget);
-            xcb_flush(ui->conn);
-            */
             char winhack[100];
             sprintf(winhack, "SDL_WINDOWID=%ld", ui->parentXwindow);
             putenv(winhack);
+            
+            //ui->window = SDL_CreateWindowFrom(ui->parentXwindow);
             ui->window = SDL_CreateWindow("test", 0, 0, 640, 480, NULL);
+            if(!ui->window) printf("\n unable to create sdl window with winhack from %ld", ui->parentXwindow);
             
             ui->sdlscreen=  SDL_CreateRGBSurface(0, 640, 480, 32,
                                                        0, 0, 0, 0);
@@ -98,12 +76,11 @@ const uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
             SDL_FillRect(ui->sdlscreen,  NULL, SDL_MapRGB(ui->sdlscreen->format, 255, 0, 0));
             SDL_BlitSurface(ui->sdlscreen, 0, SDL_GetWindowSurface(ui->window),0);
             SDL_UpdateWindowSurface(ui->window );
-            //SDL_ShowWindow(ui->window);
-
             
             *(uintptr_t *)widget = (uintptr_t)ui->widget;
             if(host_resize)
                 host_resize->ui_resize(host_resize->handle, 640, 480);
+            SDL_Quit();
 
             return (LV2UI_Handle) ui;
 

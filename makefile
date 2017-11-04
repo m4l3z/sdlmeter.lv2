@@ -11,11 +11,11 @@ sdlmeter.so: sdlmeter.c
 		gcc -shared -fPIC sdlmeter.c `pkg-config --cflags --libs lv2-plugin` -o sdlmeter.so 
 
 sdlmeterui.so: ui.c
-		gcc ui.c `pkg-config --cflags --libs lv2-plugin sdl` -o sdlmeterui.so
+		gcc -shared -fPIC ui.c `pkg-config --cflags --libs lv2-plugin sdl2 xcb` -o sdlmeterui.so
 
 all: sdlmeter.c ui.c 
 		gcc -shared -fPIC sdlmeter.c `pkg-config --cflags --libs lv2-plugin` -o sdlmeter.so 
-		gcc ui.c `pkg-config --cflags --libs lv2-plugin sdl` -o sdlmeterui.so
+		gcc -shared -fPIC ui.c `pkg-config --cflags --libs lv2-plugin sdl2 xcb` -o sdlmeterui.so
 	
 install: $(BUNDLE)
 		mkdir -p $(INSTALL_DIR)
@@ -24,3 +24,7 @@ install: $(BUNDLE)
 
 clean:
 		rm -rf $(BUNDLE) sdlmeter.so sdlmeterui.so
+
+deploy: 
+		cp sdlmeterui.so sdlmeter.so sdlmeter.ttl manifest.ttl sdlmeter.lv2
+		cp -R sdlmeter.lv2 ~/.lv2

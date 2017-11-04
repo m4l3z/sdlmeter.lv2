@@ -5,10 +5,11 @@
 <http://m4l3z.abod.co/plugin/sdlmeter> 
         a lv2:Plugin;
         lv2:binary <sdlmeter.so>; 
+        ui:ui <http://m4l3z.abod.co/plugin/sdlmeter#ui> ;
         rdfs:seeAlso <sdlmeter.ttl>.
 
 <http://m4l3z.abod.co/plugin/sdlmeter#ui> 
-        a ui:UI ;
-        ui:binary <sdlmeterui.so> ;
+        a ui:X11UI ;
+        lv2:binary <sdlmeterui.so> ;
         rdfs:seeAlso <sdlmeter.tll>.
 
